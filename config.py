@@ -61,12 +61,17 @@ OT_MEDIUM_THRESHOLD = 600
 # ============================================================================
 # MODEL 1: XGBOOST SALARY PREDICTION PARAMETERS
 # ============================================================================
+# MODEL 1: XGBOOST SALARY PREDICTION PARAMETERS
 XGBOOST_PARAMS = {
-    'n_estimators': 200,
-    'max_depth': 8,
-    'learning_rate': 0.1,
+    'n_estimators': 300,          # Increased from 200
+    'max_depth': 6,               # Reduced from 8 (less overfitting)
+    'learning_rate': 0.05,        # Reduced from 0.1 (slower, more accurate)
     'subsample': 0.8,
-    'colsample_bytree': 0.8,
+    'colsample_bytree': 0.6,      # Reduced from 0.8 (less focus on categoricals)
+    'min_child_weight': 3,        # NEW: Prevents overfitting
+    'gamma': 0.1,                 # NEW: Regularization
+    'reg_alpha': 0.1,             # NEW: L1 regularization
+    'reg_lambda': 1.0,            # NEW: L2 regularization
     'random_state': 42,
     'n_jobs': -1
 }

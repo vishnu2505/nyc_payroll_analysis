@@ -138,46 +138,58 @@ def calculate_years_of_service(df, reference_date=None):
 
 
 def create_derived_features(df):
-    """
-    Create derived features for analysis
-    
-    Args:
-        df (DataFrame): Input Spark DataFrame
-        
-    Returns:
-        DataFrame: DataFrame with additional derived features
-    """
+    """Create derived features for analysis"""
     print("✓ Creating derived features...")
     
-    # Total Compensation
-    df = df.withColumn(
-        "Total Compensation",
-        col("Base Salary") + col("Total OT Paid") + col("Total Other Pay")
-    )
+    # Existing features
+    df = df.withColumn("Total Compensation",
+                       col("Base Salary") + col("Total OT Paid") + col("Total Other Pay"))
     
-    # Overtime as percentage of base salary
-    df = df.withColumn(
-        "OT_Percentage",
-        when(col("Base Salary") > 0,
-             (col("Total OT Paid") / col("Base Salary")) * 100)
-        .otherwise(0)
-    )
+    df = df.withColumn("OT_Percentage",
+                       when(col("Base Salary") > 0,
+                            (col("Total OT Paid") / col("Base Salary")) * 100)
+                       .otherwise(0))
     
-    # Overtime risk category
-    df = df.withColumn(
-        "OT_Risk_Category",
-        when(col("OT Hours") == 0, "No OT")
-        .when(col("OT Hours") < config.OT_LOW_THRESHOLD, "Low")
-        .when(col("OT Hours") < config.OT_MEDIUM_THRESHOLD, "Medium")
-        .otherwise("High")
-    )
+    # NEW: Add more numerical features for better model performance
     
-    # Binary high-risk flag for classification
-    df = df.withColumn(
-        "At_Risk",
-        when(col("OT Hours") >= config.OT_MEDIUM_THRESHOLD, 1)
-        .otherwise(0)
-    )
+    # 1. Experience buckets (polynomial feature)
+    df = df.withColumn("Years_Squared", 
+                       col("Years of Service") * col("Years of Service"))
+    
+    df = df.withColumn("Years_Cubed",
+                       col("Years of Service") * col("Years of Service") * col("Years of Service"))
+    
+    # 2. Seniority tier
+    df = df.withColumn("Seniority_Tier",
+                       when(col("Years of Service") < 2, 1)
+                       .when(col("Years of Service") < 5, 2)
+                       .when(col("Years of Service") < 10, 3)
+                       .when(col("Years of Service") < 15, 4)
+                       .when(col("Years of Service") < 20, 5)
+                       .otherwise(6))
+    
+    # 3. Decade of service
+    df = df.withColumn("Service_Decade",
+                       (col("Years of Service") / 10).cast("int"))
+    
+    # 4. Is Senior Employee flag
+    df = df.withColumn("Is_Senior",
+                       when(col("Years of Service") >= 15, 1).otherwise(0))
+    
+    # 5. Regular Hours if available
+    df = df.withColumn("Has_OT",
+                       when(col("OT Hours") > 0, 1).otherwise(0))
+    
+    # Existing OT features...
+    df = df.withColumn("OT_Risk_Category",
+                       when(col("OT Hours") == 0, "No OT")
+                       .when(col("OT Hours") < config.OT_LOW_THRESHOLD, "Low")
+                       .when(col("OT Hours") < config.OT_MEDIUM_THRESHOLD, "Medium")
+                       .otherwise("High"))
+    
+    df = df.withColumn("At_Risk",
+                       when(col("OT Hours") >= config.OT_MEDIUM_THRESHOLD, 1)
+                       .otherwise(0))
     
     return df
 
@@ -256,17 +268,16 @@ def reduce_cardinality(df_pd, top_n_agencies=None, top_n_titles=None):
 def prepare_model1_features(df):
     """
     Prepare features specifically for Model 1 (Salary Prediction)
-    
-    Args:
-        df (DataFrame): Cleaned Spark DataFrame
-        
-    Returns:
-        DataFrame: DataFrame with features for Model 1
     """
     features = [
         "Fiscal Year",
         "Base Salary",
         "Years of Service",
+        "Years_Squared",           
+        "Years_Cubed",             
+        "Seniority_Tier",          
+        "Service_Decade",          
+        "Is_Senior",               
         "Agency Name",
         "Work Location Borough",
         "Title Description",
@@ -316,34 +327,38 @@ def prepare_model2_features(df):
 
 def encode_features(df_pd, target_col, exclude_cols=None):
     """
-    One-hot encode categorical features
-    
-    Args:
-        df_pd (DataFrame): Pandas DataFrame
-        target_col (str): Name of target column
-        exclude_cols (list): Columns to exclude from features
-        
-    Returns:
-        tuple: (X, y) - Feature matrix and target vector
+    One-hot encode categorical features and scale numerical features
     """
     if exclude_cols is None:
         exclude_cols = []
     
+    # Identify numerical columns (for scaling)
+    numerical_cols = df_pd.select_dtypes(include=[np.number]).columns.tolist()
+    numerical_cols = [col for col in numerical_cols 
+                     if col != target_col and col not in exclude_cols]
+    
     # Identify categorical columns
     categorical_cols = df_pd.select_dtypes(include=['object']).columns.tolist()
-    
-    # Remove target and excluded columns
     categorical_cols = [col for col in categorical_cols 
                        if col != target_col and col not in exclude_cols]
     
+    # Scale numerical features
+    from sklearn.preprocessing import StandardScaler
+    scaler = StandardScaler()
+    df_scaled = df_pd.copy()
+    if numerical_cols:
+        df_scaled[numerical_cols] = scaler.fit_transform(df_pd[numerical_cols])
+    
     # One-hot encode
-    df_encoded = pd.get_dummies(df_pd, columns=categorical_cols, drop_first=True)
+    df_encoded = pd.get_dummies(df_scaled, columns=categorical_cols, drop_first=True)
     
     # Separate features and target
     X = df_encoded.drop([target_col] + exclude_cols, axis=1, errors='ignore')
     y = df_encoded[target_col]
     
     print(f"✓ Encoded features: {X.shape[1]} features, {len(y)} samples")
+    print(f"  - Numerical features: {len(numerical_cols)}")
+    print(f"  - Categorical features: {len(categorical_cols)}")
     
     return X, y
 
