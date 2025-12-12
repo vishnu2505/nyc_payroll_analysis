@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import (mean_squared_error, r2_score, mean_absolute_error,
                             accuracy_score, f1_score, precision_score, recall_score,
                             confusion_matrix, classification_report)
-from xgboost import XGBRegressor, XGBClassifier
+from xgboost import XGBRegressor
 from sklearn.ensemble import RandomForestClassifier
 import joblib
 import config
@@ -41,7 +41,7 @@ def split_data(X, y, test_size=None, random_state=None, stratify=None):
         stratify=stratify
     )
     
-    print(f"✓ Data split: {len(X_train):,} train, {len(X_test):,} test")
+    print(f" Data split: {len(X_train):,} train, {len(X_test):,} test")
     
     return X_train, X_test, y_train, y_test
 
@@ -68,9 +68,9 @@ def train_xgboost_regressor(X_train, y_train, params=None):
     
     model = XGBRegressor(**params)
     
-    print("\n⏳ Training in progress...")
+    print("\n Training in progress...")
     model.fit(X_train, y_train)
-    print("✓ Training complete!")
+    print(" Training complete!")
     
     return model
 
@@ -99,7 +99,7 @@ def train_random_forest_classifier(X_train, y_train, params=None):
     
     print("\n Training in progress...")
     model.fit(X_train, y_train)
-    print("✓ Training complete!")
+    print(" Training complete!")
     
     return model
 
@@ -261,7 +261,7 @@ def get_feature_importance(model, feature_names, top_n=15):
         'Importance': model.feature_importances_
     }).sort_values('Importance', ascending=False)
     
-    print(f"\n🔝 Top {top_n} Most Important Features:")
+    print(f"\n Top {top_n} Most Important Features:")
     for idx, row in importance_df.head(top_n).iterrows():
         feature_name = row['Feature'][:50]  # Truncate long names
         print(f"  {feature_name:50s} : {row['Importance']:.4f} ({row['Importance']*100:.2f}%)")
@@ -308,7 +308,7 @@ def load_model(filepath):
         Loaded model object
     """
     model = joblib.load(filepath)
-    print(f"✓ Model loaded from: {filepath}")
+    print(f" Model loaded from: {filepath}")
     return model
 
 
@@ -333,7 +333,7 @@ def export_predictions(y_test, y_pred, filepath, probabilities=None):
     results_df['Error'] = results_df['Actual'] - results_df['Predicted']
     
     results_df.to_csv(filepath, index=False)
-    print(f"✓ Predictions saved to: {filepath}")
+    print(f" Predictions saved to: {filepath}")
 
 
 def train_and_evaluate_salary_model(X_train, X_test, y_train, y_test):

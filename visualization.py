@@ -333,7 +333,7 @@ def create_model1_visualizations(model, X_test, y_test, importance_df, save_dir=
         save_path=f"{save_dir}model1_residuals.png" if save_dir else None
     )
     
-    print("✓ Model 1 visualizations complete!")
+    print("Model 1 visualizations complete!")
 
 
 def create_model2_visualizations(model, X_test, y_test, importance_df, save_dir=None):
@@ -376,4 +376,4 @@ def create_model2_visualizations(model, X_test, y_test, importance_df, save_dir=
         save_path=f"{save_dir}model2_roc_curve.png" if save_dir else None
     )
     
-    print("✓ Model 2 visualizations complete!")
+    print("Model 2 visualizations complete!")
