@@ -97,7 +97,7 @@ def train_random_forest_classifier(X_train, y_train, params=None):
     
     model = RandomForestClassifier(**params)
     
-    print("\n⏳ Training in progress...")
+    print("\n Training in progress...")
     model.fit(X_train, y_train)
     print("✓ Training complete!")
     
@@ -133,26 +133,26 @@ def evaluate_regression_model(model, X_train, X_test, y_train, y_test):
     }
     
     # Display results
-    print(f"\n📊 Performance Metrics:")
+    print(f"\n Performance Metrics:")
     print(f"  Training R²:     {metrics['train_r2']:.4f}")
     print(f"  Test R²:         {metrics['test_r2']:.4f}")
     print(f"  Test RMSE:       ${metrics['test_rmse']:,.2f}")
     print(f"  Test MAE:        ${metrics['test_mae']:,.2f}")
     
     # Interpretation
-    print(f"\n💡 Interpretation:")
+    print(f"\n Interpretation:")
     print(f"  • Model explains {metrics['test_r2']*100:.2f}% of salary variance")
     print(f"  • Average prediction error: ${metrics['test_mae']:,.0f}")
     
     # Check overfitting
     gap = metrics['train_r2'] - metrics['test_r2']
     if gap > 0.05:
-        print(f"  ⚠️  Overfitting detected (gap: {gap*100:.2f}%)")
+        print(f"    Overfitting detected (gap: {gap*100:.2f}%)")
     else:
-        print(f"  ✓ Good generalization (gap: {gap*100:.2f}%)")
+        print(f"  Good generalization (gap: {gap*100:.2f}%)")
     
     # Sample predictions
-    print(f"\n📋 Sample Predictions:")
+    print(f"\n Sample Predictions:")
     sample_df = pd.DataFrame({
         'Actual': y_test.head(10).values,
         'Predicted': y_pred_test[:10],
@@ -163,9 +163,9 @@ def evaluate_regression_model(model, X_train, X_test, y_train, y_test):
     
     # Check if model meets minimum requirements
     if metrics['test_r2'] >= config.MIN_ACCEPTABLE_R2:
-        print(f"\n✅ Model PASSED: R² ≥ {config.MIN_ACCEPTABLE_R2}")
+        print(f"\n Model PASSED: R² ≥ {config.MIN_ACCEPTABLE_R2}")
     else:
-        print(f"\n❌ Model FAILED: R² < {config.MIN_ACCEPTABLE_R2}")
+        print(f"\n Model FAILED: R² < {config.MIN_ACCEPTABLE_R2}")
     
     return metrics
 
@@ -206,7 +206,7 @@ def evaluate_classification_model(model, X_train, X_test, y_train, y_test):
     }
     
     # Display results
-    print(f"\n📊 Performance Metrics:")
+    print(f"\n Performance Metrics:")
     print(f"  Training Accuracy:   {metrics['train_accuracy']:.4f}")
     print(f"  Test Accuracy:       {metrics['test_accuracy']:.4f}")
     print(f"  Precision:           {metrics['precision']:.4f}")
@@ -215,27 +215,27 @@ def evaluate_classification_model(model, X_train, X_test, y_train, y_test):
     
     # Confusion Matrix
     cm = confusion_matrix(y_test, y_pred_test)
-    print(f"\n📋 Confusion Matrix:")
+    print(f"\n Confusion Matrix:")
     print(f"                     Predicted Not At Risk | Predicted At Risk")
     print(f"  Actual Not At Risk:    {cm[0,0]:8,}         |    {cm[0,1]:6,}")
     print(f"  Actual At Risk:        {cm[1,0]:8,}         |    {cm[1,1]:6,}")
     
     # Classification Report
-    print(f"\n📊 Detailed Classification Report:")
+    print(f"\n Detailed Classification Report:")
     print(classification_report(y_test, y_pred_test, 
                               target_names=['Not At Risk', 'At Risk'],
                               digits=4))
     
     # Business interpretation
-    print(f"\n💡 Business Impact:")
+    print(f"\n Business Impact:")
     print(f"  • Of employees flagged, {metrics['precision']*100:.1f}% are truly at risk")
     print(f"  • Model identifies {metrics['recall']*100:.1f}% of actual at-risk employees")
     
     # Check if model meets minimum requirements
     if metrics['recall'] >= config.MIN_ACCEPTABLE_RECALL:
-        print(f"\n✅ Model PASSED: Recall ≥ {config.MIN_ACCEPTABLE_RECALL}")
+        print(f"\n Model PASSED: Recall ≥ {config.MIN_ACCEPTABLE_RECALL}")
     else:
-        print(f"\n❌ Model FAILED: Recall < {config.MIN_ACCEPTABLE_RECALL}")
+        print(f"\n Model FAILED: Recall < {config.MIN_ACCEPTABLE_RECALL}")
     
     return metrics
 
@@ -267,7 +267,7 @@ def get_feature_importance(model, feature_names, top_n=15):
         print(f"  {feature_name:50s} : {row['Importance']:.4f} ({row['Importance']*100:.2f}%)")
     
     # Categorize importance
-    print(f"\n📊 Feature Category Importance:")
+    print(f"\n Feature Category Importance:")
     
     categories = {
         'Years of Service': importance_df[importance_df['Feature'] == 'Years of Service']['Importance'].sum(),
