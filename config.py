@@ -15,7 +15,7 @@ INSTITUTION = "Northeastern University"
 # ============================================================================
 # FILE PATHS
 # ============================================================================
-DATA_PATH = "nyc_payroll_FINAL_FOR_TABLEAU.csv"
+DATA_PATH = "/content/nyc_payroll_FINAL_FOR_TABLEAU.csv"
 OUTPUT_DIR = "output/"
 MODELS_DIR = "models/"
 PLOTS_DIR = "plots/"
