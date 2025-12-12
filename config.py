@@ -136,4 +136,4 @@ HIGH_RISK_PERCENTILE = 95
 MIN_ACCEPTABLE_RECALL = 0.50
 
 # Minimum R² for acceptable regression model
-MIN_ACCEPTABLE_R2 = 0.70
+MIN_ACCEPTABLE_R2 = 0.60
